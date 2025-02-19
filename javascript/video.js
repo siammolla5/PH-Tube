@@ -1,3 +1,27 @@
+function timeSpiniSet(time) {
+  const hour = parseInt(time / 3600);
+  let hourRemenider = hour % 3600;
+  const minute = parseInt(hourRemenider / 60);
+  hourRemenider = hourRemenider % 60;
+  return `${hour} hour ${minute} minute ${hourRemenider} secnd ago `;
+}
+const lodeVideo = (id) => {
+  // alert(id);
+  fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      removeActiveClass();
+      const activeButton = document.getElementById(`btn-${id}`);
+      activeButton.classList.add("active");
+      displyVideo(data.category);
+    }) /////
+    .catch((error) => console.log(error));
+};
+const removeActiveClass = () => {
+  const buttons = document.getElementById("category-btn");
+  console.log("this is my buttons ", buttons);
+};
+
 const dataLoded = () => {
   fetch(" https://openapi.programming-hero.com/api/phero-tube/categories")
     .then((res) => res.json())
@@ -5,15 +29,22 @@ const dataLoded = () => {
     .catch((error) => console.log(error));
 };
 
+// {
+//   "category_id": "1001",
+//   "category": "Music"
+// }
 const displayDataLode = (catagoris) => {
   const showCatagoris = document.getElementById("catagoris");
   catagoris.forEach((item) => {
     console.log(item);
 
-    const button = document.createElement("button");
-    button.classList = "btn";
-    button.innerText = item.category;
-    showCatagoris.append(button);
+    const buttonContainer = document.createElement("div");
+    buttonContainer.innerHTML = `
+    <button id="btn-${item.category_id}" onclick="lodeVideo(${item.category_id})" class="category-btn">
+    ${item.category}
+    </button>
+    `;
+    showCatagoris.append(buttonContainer);
   });
 };
 
@@ -45,24 +76,63 @@ const cardDemo = {
 const displyVideo = (videoData) => {
   console.log("tis is video", videoData);
   const videoContainer = document.getElementById("video ");
+  videoContainer.innerHTML = "";
+  if (videoData.length === 0) {
+    videoContainer.classList.remove("grid");
+    videoContainer.innerHTML = `
+    <div class="min-h-screen flex flex-col gap-5 relative  justify-center items-center">
+    <img src="https://img.icons8.com/?size=160&id=nIZ6QarDy4M7&format=png" >
+    <h2 class="font-bold text-2xl"> No content Here in  this category</h2>
+    </div>
+    `;
+    return;
+  } else {
+    videoContainer.classList.add("grid");
+  }
   videoData.forEach((items) => {
     console.log(items);
     const card = document.createElement("div");
     card.classList = "card card-compact ";
     card.innerHTML = `
-    <figure class="h-[200px]">
+    <figure class="h-[200px] relative">
     <img
       src=${items.thumbnail}
-      class="h-full w-full"
+      class="h-full w-full object-cover"
       alt="Shoes" />
+     
+      ${
+        items.others.posted_date?.length == 0
+          ? ""
+          : ` <span class="absolute right-2 bottom-2 bg-black p-2 rounded text-white text-xs">${timeSpiniSet(
+              items.others.posted_date
+            )}</span>`
+      }
+     
   </figure>
-  <div class="card-body">
-    <h2 class="card-title">Shoes!</h2>
-    <p>If a dog chews shoes whose shoes does he choose?</p>
-    <div class="card-actions justify-end">
-      <button class="btn btn-primary">Buy Now</button>
-    </div>
+<div class="px-0 py-2 flex  gap-2">
+    
+   <div> 
+    <img class="h-10 w-10 rounded-full object-cover" src="${items.authors[0].profile_picture}" 
+   </div>
+
+
+  <div>
+  <h2 class="font-bold">${items.title}</h2>
+   
+   <div class="flex items-center gap-3">
+    <p class="text-gray-500 font-semibold">${items.authors[0].profile_name}</p>
+    ${
+      items.authors[0].verified == true
+        ? `<img class="h-5 w-5" src="https://img.icons8.com/?size=64&id=7sSZVDKAbwO0&format=png" >`
+        : " "
+    }
+   
+   </div>
+    <p></p>
   </div>
+  
+
+</div>
     
     `;
     videoContainer.append(card);
